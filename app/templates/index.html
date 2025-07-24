@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CME Classifier</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .loading { display: none; font-style: italic; color: #555; }
+    .result { margin-top: 20px; padding: 15px; border-radius: 8px; }
+    .result.success { background-color: #e7f8e8; border: 1px solid #6cc070; }
+    .result.error { background-color: #ffe7e7; border: 1px solid #d66; }
+    .preview-table { margin-top: 10px; font-size: 14px; border-collapse: collapse; }
+    .preview-table th, .preview-table td { border: 1px solid #aaa; padding: 4px 8px; }
+    .confidence-bar {
+      height: 10px;
+      background: linear-gradient(to right, #4caf50 var(--percent), #eee var(--percent));
+      border-radius: 5px;
+      margin-top: 5px;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1> Coronal Mass Ejection Classifier</h1>
+
+    <form id="uploadForm" method="post" action="/predict" enctype="multipart/form-data">
+      <label for="file"><strong>Upload 2–3 days of SWIS data (CSV):</strong></label><br>
+      <input type="file" name="file" accept=".csv" required><br><br>
+      <button type="submit">Predict CME</button>
+    </form>
+
+    <div id="loading" class="loading">⏳ Processing your file...</div>
+
+    {% if submitted %}
+      {% if error %}
+        <div class="result error">
+          <h2>Error: {{ error }}</h2>
+          <p>Please ensure your CSV contains all the following columns:</p>
+          <ul>
+            <li><code>proton_density</code></li>
+            <li><code>proton_speed</code></li>
+            <li><code>proton_temperature</code></li>
+            <li><code>alpha_density</code></li>
+          </ul>
+          <p>Each row should represent 5-minute averaged measurements.</p>
+        </div>
+      {% else %}
+        <div class="result success">
+          <h2>🔍 Prediction: <strong>{{ result }}</strong></h2>
+          <p>🧠 Confidence: <strong>{{ confidence }}%</strong></p>
+          <div class="confidence-bar" style="--percent: {{ confidence }}%;"></div>
+          <p><i>Note: Prediction made using Alpha-Proton ratios, temperature-speed ratios, and velocity variability over time.</i></p>
+        </div>
+      {% endif %}
+    {% endif %}
+
+    <div class="info-box">
+      <h3>📄 CSV Format Guide</h3>
+      <p>Make sure your file includes:</p>
+      <ul>
+        <li>At least 2–3 days of data (preferably 576+ rows at 5-min cadence)</li>
+        <li>No missing values in the required columns</li>
+        <li>Headers: <code>proton_density</code>, <code>proton_speed</code>, <code>proton_temperature</code>, <code>alpha_density</code></li>
+      </ul>
+      <p>You may preprocess from SWIS Level-2 data accordingly.</p>
+    </div>
+  </div>
+
+  <script src="/static/js/script.js"></script>
+</body>
+</html>

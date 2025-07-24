@@ -1,0 +1,96 @@
+body {
+  font-family: Arial, sans-serif;
+  background-image: url('solar_background.jpg'); 
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: #f0f0f0;
+  text-align: center;
+  padding-top: 50px;
+  margin: 0;
+}
+
+.container {
+  width: 420px;
+  margin: auto;
+  background: rgba(0, 0, 0, 0.75); /* Dark glass effect */
+  padding: 25px 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(255, 140, 0, 0.4);
+}
+
+input[type="file"],
+button {
+  margin: 12px 0;
+  padding: 10px;
+  width: 90%;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  background-color: #222;
+  color: #fff;
+}
+
+button {
+  background: linear-gradient(145deg, #ff9800, #ff5722);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  border: none;
+  box-shadow: 0 4px 10px rgba(255, 87, 34, 0.4);
+}
+
+button:hover {
+  background: linear-gradient(145deg, #ff5722, #ff9800);
+}
+
+.result {
+  margin-top: 20px;
+  font-weight: bold;
+  padding: 12px;
+  background-color: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  border-radius: 8px;
+  color: #2e7d32;
+}
+
+.result.error {
+  background-color: #fdecea;
+  border: 1px solid #f5c6cb;
+  color: #c62828;
+}
+
+.result.warning {
+  background-color: #fff8e1;
+  border: 1px solid #ffecb3;
+  color: #ff8f00;
+}
+
+.info-box {
+  margin-top: 25px;
+  background-color: rgba(255, 255, 255, 0.07);
+  border-left: 4px solid #ffa726;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: left;
+  font-size: 14px;
+  color: #f5f5f5;
+}
+
+.info-box h3 {
+  margin-top: 0;
+  color: #ffcc80;
+  font-size: 16px;
+}
+
+ul {
+  padding-left: 20px;
+  text-align: left;
+}
+
+ul li {
+  margin-bottom: 5px;
+}
+

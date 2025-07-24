@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: cme-fastapi-app
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "./start.sh"
+    plan: free
