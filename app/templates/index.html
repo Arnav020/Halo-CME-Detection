@@ -42,6 +42,7 @@
           <h2>Error: {{ error }}</h2>
           <p>Please ensure your CSV contains all the following columns:</p>
           <ul>
+            <li><code>timestamps</code></li>
             <li><code>proton_density</code></li>
             <li><code>proton_speed</code></li>
             <li><code>proton_temperature</code></li>
@@ -65,7 +66,7 @@
       <ul>
         <li>At least 2–3 days of data (preferably 576+ rows at 5-min cadence)</li>
         <li>No missing values in the required columns</li>
-        <li>Headers: <code>proton_density</code>, <code>proton_speed</code>, <code>proton_temperature</code>, <code>alpha_density</code></li>
+        <li>Headers:<code>timestamps</code>, <code>proton_density</code>, <code>proton_speed</code>, <code>proton_temperature</code>, <code>alpha_density</code></li>
       </ul>
       <p>You may preprocess from SWIS Level-2 data accordingly.</p>
     </div>
