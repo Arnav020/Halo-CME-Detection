@@ -1,6 +1,7 @@
-# 🌞 CME Classifier – Real-Time Coronal Mass Ejection Detection
+# 🌞 CME Classifier –  Coronal Mass Ejection Detection
 
-A web-based ML tool for classifying Coronal Mass Ejections (CMEs) using **real solar wind data** from Aditya-L1 SWIS Level-2 dataset. Powered by a physics-informed ML model deployed using **FastAPI**.
+- A web-based ML tool for classifying Coronal Mass Ejections (CMEs) using **real solar wind data** from Aditya-L1 SWIS Level-2 dataset. Powered by a physics-informed ML model deployed using **FastAPI**.
+- Deployed link: https://halo-cme-detection.onrender.com
 
 ---
 
@@ -27,22 +28,6 @@ A web-based ML tool for classifying Coronal Mass Ejections (CMEs) using **real s
    - `proton_temperature`
    - `alpha_density`
 3. Upload on the web UI → get prediction and confidence score.
-
----
-
-## 📁 Folder Structure
-
-├── main.py # FastAPI app
-├── model/ # Saved ML model (pickle or joblib)
-│ └── classifier.pkl
-├── templates/
-│ └── index.html # HTML interface
-├── static/
-│ ├── css/style.css # Styles
-│ └── js/script.js # JS interactivity
-├── requirements.txt
-├── start.sh # Render entrypoint
-└── README.md
 
 ---
 
