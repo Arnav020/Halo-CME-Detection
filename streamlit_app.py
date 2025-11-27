@@ -20,13 +20,13 @@ st.markdown("""
 <style>
     /* Main background gradient */
     .stApp {
-        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
     }
     
     /* Sidebar styling */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-        border-right: 2px solid #4a5568;
+        background: linear-gradient(180deg, #0d0d0d 0%, #1a1a1a 100%);
+        border-right: 2px solid #2d2d2d;
     }
     
     /* Headers with glow effect */
