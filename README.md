@@ -1,7 +1,7 @@
 # 🌞 CME Classifier –  Coronal Mass Ejection Detection
 
 - A web-based ML tool for classifying Coronal Mass Ejections (CMEs) using **real solar wind data** from Aditya-L1 SWIS Level-2 dataset. Powered by a physics-informed ML model deployed using **FastAPI**.
-- Deployed link: [https://halo-cme-detection.onrender.com](https://heliopredict.streamlit.app/)
+- Deployed link: [https://heliopredict.streamlit.app/](https://heliopredict.streamlit.app/)
 
 ---
 
