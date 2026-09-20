@@ -12,6 +12,8 @@
 
 [Live demo](https://halo-cme-detection.onrender.com) · [Methodology](#methodology) · [API](#api) · [Run locally](#run-locally)
 
+**Live at [halo-cme-detection.onrender.com](https://halo-cme-detection.onrender.com)** — hosted on Render's free tier, so the first request after idle may take ~30 s to wake.
+
 </div>
 
 <br>
