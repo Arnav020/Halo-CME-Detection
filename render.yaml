@@ -1,7 +1,10 @@
 services:
   - type: web
     name: halo-cme-detection
-    env: python
+    runtime: python
+    plan: free
     buildCommand: "pip install -r requirements.txt"
     startCommand: "./start.sh"
-    plan: free
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
