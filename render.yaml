@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: cme-fastapi-app
+    name: halo-cme-detection
     env: python
     buildCommand: "pip install -r requirements.txt"
     startCommand: "./start.sh"

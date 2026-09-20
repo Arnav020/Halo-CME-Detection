@@ -1,37 +1,77 @@
-# 🌞 CME Classifier –  Coronal Mass Ejection Detection
+# Halo CME Detection – Coronal Mass Ejection Classifier
 
-- A web-based ML tool for classifying Coronal Mass Ejections (CMEs) using **real solar wind data** from Aditya-L1 SWIS Level-2 dataset. Powered by a physics-informed ML model deployed using **FastAPI**.
+A web application that classifies **Halo Coronal Mass Ejections (CMEs)** from real solar wind
+plasma data (Aditya-L1 SWIS Level-2). A physics-informed ensemble model runs behind a **FastAPI**
+JSON API, and a dependency-free **HTML / CSS / JavaScript** frontend presents the verdict,
+ensemble votes, derived features and parameter time series.
+
 - Deployed link: https://halo-cme-detection.onrender.com
 
 ---
 
-## 🚀 Features
+## Features
 
-- 🌞 Accepts real-time 5-minute SWIS CSV data
-- 📊 Predicts CME occurrence using:
-  - Alpha-Proton density ratios
-  - Proton temperature to speed ratio
-  - Velocity variability
-- 🧠 Trained on labeled CACTUS-Halo CME events
-- 💡 FastAPI-based backend with clean HTML frontend
-- ✅ No internet model inference — runs fully on backend
-- ⚙️ Deployable via Render or locally
+- Accepts 5-minute cadence SWIS CSV data (finer data is resampled, sparser data is rejected)
+- Predicts CME occurrence from four physics-informed features:
+  - Alpha–proton density ratio
+  - Proton speed variability (15-minute rolling std)
+  - Alpha / speed-variability index
+  - Alpha–temperature ratio
+- Trained on labelled CACTUS Halo CME events
+- Soft-voting ensemble (Random Forest + XGBoost + Logistic Regression)
+- FastAPI backend with a JSON API (`/api/predict`, `/api/health`)
+- Claymorphic, animated frontend: drag-and-drop upload, probability gauge, per-estimator votes,
+  feature cards, interactive plasma time-series charts and a data preview
+- Bundled sample window for a one-click demo
+- Deployable on Render or locally; inference runs entirely on the backend
 
 ---
 
-## 🧪 Example Usage
+## Project structure
+
+```
+.
+├── main.py                  # FastAPI app: API routes + static frontend
+├── app/
+│   ├── model/cme_model.joblib
+│   └── Utils/features.py    # feature engineering (unchanged model pipeline)
+├── static/
+│   ├── index.html           # single-page frontend
+│   ├── css/style.css        # design system (claymorphism)
+│   ├── js/app.js            # upload flow, charts, animations
+│   ├── samples/             # sample SWIS window for the demo button
+│   └── favicon.svg
+├── streamlit_app.py         # legacy Streamlit UI (kept for reference)
+├── requirements.txt
+├── render.yaml / start.sh   # Render deployment
+└── debug_input.csv          # test dataset
+```
+
+---
+
+## Example usage
 
 1. Prepare a CSV file with **2–3 days of 5-min averaged data**.
 2. Required headers:
+   - `timestamp`
    - `proton_density`
    - `proton_speed`
    - `proton_temperature`
    - `alpha_density`
-3. Upload on the web UI → get prediction and confidence score.
+3. Upload on the web UI (or click *Load a sample SWIS window*) and run detection.
+
+### API
+
+```
+GET  /api/health            -> model name, estimators, threshold, feature list
+POST /api/predict  (multipart "file") -> prediction, probability, threshold, features,
+                                          per-estimator votes, dataset summary,
+                                          preview rows, downsampled series
+```
 
 ---
 
-## 🧠 CME Classification Model Overview
+## CME classification model overview
 
 This document provides a technical overview of the machine learning model used in the **CME Classifier Web App** for detecting Coronal Mass Ejections from solar wind data.
 
@@ -133,7 +173,7 @@ Using domain-specific ratios (like Alpha/Proton) helps generalize across time pe
 
 ---
 
-## 🖥️ Run Locally
+## Run locally
 
 > Requires Python 3.10+
 
@@ -146,12 +186,15 @@ source venv/bin/activate    # On Windows: venv\Scripts\activate
 
 pip install -r requirements.txt
 uvicorn main:app --reload
+```
+
+Then open http://127.0.0.1:8000.
 
 ---
 
-## 👨‍💻 Author
+## Authors
 
-**Arnav Joshi**  
-- B.Tech CSE @ Thapar University  
+**Arnav Joshi · Pulkit Garg**  
+- B.Tech CSE @ Thapar Institute of Engineering & Technology  
 - Passionate about space-AI and physics-informed ML
 

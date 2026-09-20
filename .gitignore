@@ -10,7 +10,7 @@ env/
 
 # VS Code settings
 .vscode/
-
+.claude
 # Environment variables
 .env
 

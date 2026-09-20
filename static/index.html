@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Halo CME Detection · Aditya-L1 SWIS</title>
+  <meta name="description" content="Physics-informed machine learning for detecting Halo Coronal Mass Ejections from Aditya-L1 SWIS Level-2 solar wind plasma data." />
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css?v=3" />
+</head>
+<body>
+  <div class="page-noise" aria-hidden="true"></div>
+
+  <!-- ============================ NAV ============================ -->
+  <header class="nav-wrap">
+    <nav class="nav clay" aria-label="Primary">
+      <a class="brand" href="#top">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="6" fill="currentColor"/>
+            <circle cx="16" cy="16" r="11" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <path d="M16 2v4M16 26v4M2 16h4M26 16h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="brand-text">Halo CME<span class="brand-sub">Detection</span></span>
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#detect" data-nav>Detect</a></li>
+        <li><a href="#methodology" data-nav>Methodology</a></li>
+        <li><a href="#model" data-nav>Model</a></li>
+      </ul>
+      <div class="nav-status" id="navStatus">
+        <span class="status-dot"></span>
+        <span class="status-text">Connecting</span>
+      </div>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span>
+      </button>
+    </nav>
+  </header>
+
+  <main id="top">
+    <!-- ============================ HERO ============================ -->
+    <section class="hero container">
+      <div class="hero-copy">
+        <p class="eyebrow reveal">Aditya-L1 &middot; SWIS Level-2 &middot; Physics-informed ML</p>
+        <h1 class="display reveal" data-delay="80">
+          Coronal mass ejection detection from <em>in-situ</em> solar wind plasma.
+        </h1>
+        <p class="lead reveal" data-delay="160">
+          An ensemble classifier that identifies Halo CME signatures in five-minute
+          SWIS measurements without coronagraph imaging &mdash; enabling earlier,
+          on-board space-weather warnings.
+        </p>
+        <div class="hero-actions reveal" data-delay="240">
+          <a href="#detect" class="btn btn-primary">
+            Analyse a dataset
+            <svg class="btn-icon" viewBox="0 0 20 20" fill="none"><path d="M4 10h12m0 0-5-5m5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="#methodology" class="btn btn-ghost">Read the methodology</a>
+        </div>
+        <ul class="hero-stats reveal" data-delay="320">
+          <li class="clay stat">
+            <span class="stat-value"><span data-count="100" data-suffix="%">0%</span></span>
+            <span class="stat-label">CME recall</span>
+          </li>
+          <li class="clay stat">
+            <span class="stat-value"><span data-count="0.91" data-decimals="2">0.00</span></span>
+            <span class="stat-label">ROC AUC</span>
+          </li>
+          <li class="clay stat">
+            <span class="stat-value"><span data-count="4">0</span></span>
+            <span class="stat-label">Plasma features</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="hero-visual reveal" data-delay="200">
+        <div class="clay sun-frame">
+          <canvas id="sunCanvas" aria-hidden="true"></canvas>
+          <div class="sun-legend">
+            <span class="legend-chip"><i class="legend-swatch legend-swatch--wind"></i>Ambient wind</span>
+            <span class="legend-chip"><i class="legend-swatch legend-swatch--cme"></i>Ejecta</span>
+          </div>
+          <div class="sun-caption">
+            <span class="mono">L1 · 1.5 &times; 10<sup>6</sup> km</span>
+            <span>Solar wind ion spectrometer vantage</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ DETECT ============================ -->
+    <section id="detect" class="section container">
+      <header class="section-head reveal">
+        <p class="eyebrow">01 &mdash; Detection</p>
+        <h2 class="display-sm">Upload a SWIS window. Get a verdict.</h2>
+        <p class="section-lead">
+          Provide two to three days of five-minute averaged plasma parameters. The
+          service derives four physics-informed features and scores the window with a
+          soft-voting ensemble.
+        </p>
+      </header>
+
+      <div class="detect-grid">
+        <div class="clay upload-card reveal">
+          <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload CSV file">
+            <input type="file" id="fileInput" accept=".csv,text/csv" hidden />
+            <div class="dropzone-art" aria-hidden="true">
+              <svg viewBox="0 0 64 64" fill="none">
+                <rect x="10" y="18" width="44" height="34" rx="8" stroke="currentColor" stroke-width="2"/>
+                <path d="M32 40V22m0 0-7 7m7-7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M18 12h28" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".35"/>
+                <path d="M24 6h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".18"/>
+              </svg>
+            </div>
+            <p class="dropzone-title">Drop your CSV here</p>
+            <p class="dropzone-sub">or <span class="link">browse files</span></p>
+            <p class="dropzone-file" id="dropzoneFile" hidden></p>
+          </div>
+
+          <div class="upload-actions">
+            <button class="btn btn-primary btn-block" id="analyseBtn" disabled>
+              <span class="btn-label">Run detection</span>
+              <span class="btn-spinner" aria-hidden="true"></span>
+            </button>
+            <button class="btn btn-ghost btn-block" id="resetBtn" hidden>Clear</button>
+          </div>
+          <p class="upload-sample">
+            No data at hand? <button type="button" class="link-btn" id="sampleBtn">Load a sample SWIS window</button>
+          </p>
+
+          <div class="upload-error" id="uploadError" role="alert" hidden></div>
+        </div>
+
+        <aside class="clay clay--flat requirements reveal" data-delay="100">
+          <h3 class="card-title">Input specification</h3>
+          <ul class="req-list">
+            <li>
+              <span class="req-key mono">timestamp</span>
+              <span class="req-desc">ISO datetime, sorted or unsorted</span>
+            </li>
+            <li>
+              <span class="req-key mono">proton_density</span>
+              <span class="req-desc">N<sub>p</sub> &middot; cm<sup>-3</sup></span>
+            </li>
+            <li>
+              <span class="req-key mono">proton_speed</span>
+              <span class="req-desc">V<sub>p</sub> &middot; km s<sup>-1</sup></span>
+            </li>
+            <li>
+              <span class="req-key mono">proton_temperature</span>
+              <span class="req-desc">T<sub>p</sub> &middot; eV / K</span>
+            </li>
+            <li>
+              <span class="req-key mono">alpha_density</span>
+              <span class="req-desc">N<sub>&alpha;</sub> &middot; cm<sup>-3</sup></span>
+            </li>
+          </ul>
+          <div class="req-note">
+            <strong>Cadence.</strong> Rows at &le;5-minute intervals are accepted; finer
+            data is resampled to 5-minute means. Sparser data is rejected.
+          </div>
+        </aside>
+      </div>
+
+      <!-- Results -->
+      <div class="results" id="results" hidden>
+        <div class="results-grid">
+          <article class="clay verdict" id="verdictCard">
+            <div class="verdict-head">
+              <p class="eyebrow" id="verdictEyebrow">Classification</p>
+              <span class="verdict-file mono" id="verdictFile"></span>
+            </div>
+            <div class="verdict-body">
+              <div class="gauge" aria-hidden="true">
+                <svg viewBox="0 0 200 120">
+                  <defs>
+                    <linearGradient id="gaugeTrack" x1="0" x2="1">
+                      <stop offset="0" stop-color="var(--sage)"/>
+                      <stop offset="0.45" stop-color="var(--sage)"/>
+                      <stop offset="0.45" stop-color="var(--ember)"/>
+                      <stop offset="1" stop-color="var(--ember)"/>
+                    </linearGradient>
+                  </defs>
+                  <path class="gauge-bg" d="M20 105 A80 80 0 0 1 180 105" />
+                  <path class="gauge-fill" id="gaugeFill" d="M20 105 A80 80 0 0 1 180 105" />
+                  <line class="gauge-threshold" id="gaugeThreshold" x1="100" y1="25" x2="100" y2="35"/>
+                </svg>
+                <div class="gauge-readout">
+                  <span class="gauge-value mono" id="gaugeValue">0.0%</span>
+                  <span class="gauge-label">CME probability</span>
+                </div>
+              </div>
+              <div class="verdict-text">
+                <h3 class="verdict-title" id="verdictTitle">&nbsp;</h3>
+                <p class="verdict-desc" id="verdictDesc"></p>
+                <dl class="verdict-meta">
+                  <div><dt>Threshold</dt><dd class="mono" id="verdictThreshold">45%</dd></div>
+                  <div><dt>Margin</dt><dd class="mono" id="verdictMargin">&ndash;</dd></div>
+                </dl>
+              </div>
+            </div>
+          </article>
+
+          <article class="clay votes">
+            <h3 class="card-title">Ensemble vote</h3>
+            <p class="card-sub">Per-estimator probability before soft averaging.</p>
+            <ul class="vote-list" id="voteList"></ul>
+          </article>
+
+          <article class="clay clay--flat dataset">
+            <h3 class="card-title">Dataset</h3>
+            <dl class="kv" id="datasetMeta"></dl>
+          </article>
+        </div>
+
+        <div class="features-block">
+          <header class="block-head">
+            <h3 class="display-xs">Derived features</h3>
+            <p class="card-sub">Window means used as model inputs.</p>
+          </header>
+          <div class="feature-grid" id="featureGrid"></div>
+        </div>
+
+        <div class="series-block">
+          <header class="block-head">
+            <h3 class="display-xs">Plasma parameters over the window</h3>
+            <p class="card-sub" id="seriesSub"></p>
+          </header>
+          <div class="series-grid" id="seriesGrid"></div>
+        </div>
+
+        <div class="preview-block">
+          <header class="block-head">
+            <h3 class="display-xs">Data preview</h3>
+            <p class="card-sub">First eight rows as received.</p>
+          </header>
+          <div class="clay clay--flat table-wrap">
+            <table class="data-table" id="previewTable"></table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ METHODOLOGY ============================ -->
+    <section id="methodology" class="section container">
+      <header class="section-head reveal">
+        <p class="eyebrow">02 &mdash; Methodology</p>
+        <h2 class="display-sm">From raw ion spectra to a calibrated decision.</h2>
+        <p class="section-lead">
+          The pipeline is deliberately shallow: four interpretable ratios computed over a
+          three-day window, scored by three complementary learners.
+        </p>
+      </header>
+
+      <ol class="pipeline reveal-group">
+        <li class="clay pipe-step reveal">
+          <span class="pipe-num mono">01</span>
+          <h3>Acquisition</h3>
+          <p>Aditya-L1 SWIS Level-2 plasma moments: N<sub>p</sub>, V<sub>p</sub>, T<sub>p</sub> and N<sub>&alpha;</sub> at five-minute cadence.</p>
+        </li>
+        <li class="clay pipe-step reveal" data-delay="80">
+          <span class="pipe-num mono">02</span>
+          <h3>Labelling</h3>
+          <p>Halo events from the CACTUS LASCO catalogue define T<sub>0</sub>; windows span T&minus;1&nbsp;d to T+2&nbsp;d. Quiet periods sampled as negatives.</p>
+        </li>
+        <li class="clay pipe-step reveal" data-delay="160">
+          <span class="pipe-num mono">03</span>
+          <h3>Feature engineering</h3>
+          <p>Composition, thermodynamic and turbulence ratios computed row-wise, then averaged over the window.</p>
+        </li>
+        <li class="clay pipe-step reveal" data-delay="240">
+          <span class="pipe-num mono">04</span>
+          <h3>Inference</h3>
+          <p>Soft-voting ensemble outputs a probability; a 0.45 threshold is tuned to eliminate missed CMEs.</p>
+        </li>
+      </ol>
+
+      <div class="method-features reveal-group">
+        <article class="clay method-card reveal">
+          <div class="formula mono">N<sub>&alpha;</sub> / N<sub>p</sub></div>
+          <h3>Alpha&ndash;proton ratio</h3>
+          <p>CME ejecta carries an enhanced helium abundance relative to the ambient wind. A sustained rise is one of the strongest in-situ signatures.</p>
+        </article>
+        <article class="clay method-card reveal" data-delay="80">
+          <div class="formula mono">&sigma;(V<sub>p</sub>)<sub>15 min</sub></div>
+          <h3>Speed variability</h3>
+          <p>Shock-driven turbulence produces short-scale speed fluctuations. A centred three-sample rolling standard deviation captures it.</p>
+        </article>
+        <article class="clay method-card reveal" data-delay="160">
+          <div class="formula mono">(N<sub>&alpha;</sub>/N<sub>p</sub>) / &sigma;(V<sub>p</sub>)</div>
+          <h3>Alpha over V<sub>p</sub> std</h3>
+          <p>Combines composition and coherence: high values isolate alpha-rich, low-turbulence ejecta cores behind the sheath.</p>
+        </article>
+        <article class="clay method-card reveal" data-delay="240">
+          <div class="formula mono">N<sub>&alpha;</sub> / T<sub>p</sub></div>
+          <h3>Alpha&ndash;temperature ratio</h3>
+          <p>Magnetic clouds are anomalously cool for their speed. Relating alpha density to proton temperature exposes that thermodynamic signature.</p>
+        </article>
+      </div>
+
+      <div class="clay clay--flat perf reveal">
+        <div class="perf-head">
+          <h3 class="display-xs">Held-out performance</h3>
+          <p class="card-sub">30% test split &middot; 13 Halo CME and 30 non-CME windows</p>
+        </div>
+        <ul class="perf-grid">
+          <li><span class="perf-value"><span data-count="85" data-suffix="%">0%</span></span><span class="perf-label">Accuracy</span></li>
+          <li><span class="perf-value"><span data-count="67" data-suffix="%">0%</span></span><span class="perf-label">Precision (CME)</span></li>
+          <li><span class="perf-value"><span data-count="100" data-suffix="%">0%</span></span><span class="perf-label">Recall (CME)</span></li>
+          <li><span class="perf-value"><span data-count="80" data-suffix="%">0%</span></span><span class="perf-label">F1 (CME)</span></li>
+          <li><span class="perf-value"><span data-count="0.91" data-decimals="2">0.00</span></span><span class="perf-label">ROC AUC</span></li>
+          <li><span class="perf-value"><span data-count="0">0</span></span><span class="perf-label">False negatives</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================ MODEL ============================ -->
+    <section id="model" class="section container">
+      <header class="section-head reveal">
+        <p class="eyebrow">03 &mdash; Model</p>
+        <h2 class="display-sm">Three learners, one calibrated vote.</h2>
+        <p class="section-lead">
+          A <code class="mono">VotingClassifier</code> with soft voting averages class
+          probabilities from a random forest, a gradient-boosted tree ensemble and a
+          regularised linear model.
+        </p>
+      </header>
+
+      <div class="estimators reveal-group">
+        <article class="clay est-card reveal">
+          <header>
+            <span class="est-tag mono">rf</span>
+            <h3>Random forest</h3>
+          </header>
+          <ul>
+            <li><span>class_weight</span><span class="mono">balanced</span></li>
+            <li><span>random_state</span><span class="mono">42</span></li>
+            <li><span>Strength</span><span>Outlier robustness</span></li>
+          </ul>
+        </article>
+        <article class="clay est-card reveal" data-delay="80">
+          <header>
+            <span class="est-tag mono">xgb</span>
+            <h3>XGBoost</h3>
+          </header>
+          <ul>
+            <li><span>scale_pos_weight</span><span class="mono">neg / pos</span></li>
+            <li><span>eval_metric</span><span class="mono">logloss</span></li>
+            <li><span>Strength</span><span>Bias reduction</span></li>
+          </ul>
+        </article>
+        <article class="clay est-card reveal" data-delay="160">
+          <header>
+            <span class="est-tag mono">lr</span>
+            <h3>Logistic regression</h3>
+          </header>
+          <ul>
+            <li><span>penalty</span><span class="mono">l2</span></li>
+            <li><span>solver</span><span class="mono">liblinear</span></li>
+            <li><span>Strength</span><span>Calibrated probabilities</span></li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="model-grid">
+        <article class="clay clay--flat prose reveal">
+          <h3 class="card-title">Why in-situ detection</h3>
+          <p>
+            Halo CMEs are the most geo-effective solar events: they disturb satellite
+            operations, degrade GNSS accuracy, drive geomagnetic storms and stress power
+            infrastructure. Conventional detection depends on coronagraph imagery
+            (LASCO, CACTUS) with ground processing delays.
+          </p>
+          <p>
+            Scoring plasma moments directly makes detection lightweight enough for
+            on-board execution and removes the imaging dependency, shortening the
+            warning chain.
+          </p>
+        </article>
+
+        <article class="clay clay--flat prose reveal" data-delay="80">
+          <h3 class="card-title">Dataset</h3>
+          <dl class="kv">
+            <div><dt>Source</dt><dd>Aditya-L1 SWIS L2, 5-min downsampled</dd></div>
+            <div><dt>Ground truth</dt><dd>CACTUS LASCO Halo catalogue</dd></div>
+            <div><dt>Positive windows</dt><dd class="mono">13</dd></div>
+            <div><dt>Negative windows</dt><dd class="mono">30</dd></div>
+            <div><dt>Window</dt><dd class="mono">T&minus;1 d &rarr; T+2 d</dd></div>
+            <div><dt>Threshold</dt><dd class="mono">0.45</dd></div>
+          </dl>
+        </article>
+
+        <article class="clay clay--flat prose reveal" data-delay="160">
+          <h3 class="card-title">Outlook</h3>
+          <ul class="bullets">
+            <li>Shock and sheath region segmentation</li>
+            <li>Multi-year SWIS dataset expansion (CACTUS &amp; SEEDS)</li>
+            <li>Temporal embeddings via recurrent models</li>
+            <li>ONNX export for on-board inference</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================ FOOTER ============================ -->
+  <footer class="footer container">
+    <div class="clay clay--flat footer-inner">
+      <div>
+        <p class="footer-title">Halo CME Detection</p>
+        <p class="footer-sub">Physics-informed classification of Aditya-L1 SWIS plasma windows.</p>
+      </div>
+      <div class="footer-people">
+        <p class="footer-label">Developed by</p>
+        <p class="footer-names">Arnav Joshi &middot; Pulkit Garg</p>
+        <p class="footer-sub">Thapar Institute of Engineering &amp; Technology</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/static/js/app.js?v=3" defer></script>
+</body>
+</html>
